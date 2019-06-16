@@ -4,6 +4,7 @@ Description: Bookmark Manager with URL shortener and preview features.
 Items:
 
   - Resource: BookmarksTable
+    Scope: all
     Description: DynamoDB for storing all the bookmark data
     Type: AWS::DynamoDB::Table
     Allow: ReadWrite
@@ -25,14 +26,14 @@ Items:
       - Api: POST:/bookmarks
         Invoke: AddBookmark
 
-      # - Api: GET:/bookmarks
-      #   Invoke: GetBookmarks
+      - Api: GET:/bookmarks/{id}
+        Invoke: GetBookmark
 
-      # - Api: GET:/bookmarks/{id}
-      #   Invoke: GetBookmark
+      - Api: GET:/bookmarks
+        Invoke: GetBookmarks
 
-      # - Api: DELETE:/bookmarks/{id}
-      #   Invoke: DeleteBookmark
+      - Api: DELETE:/bookmarks/{id}
+        Invoke: DeleteBookmark
 
   - Variable: ApiUrl
     Description: API Gateway URL
