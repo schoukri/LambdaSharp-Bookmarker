@@ -23,7 +23,7 @@ namespace LambdaSharp.Challenge.Bookmarker.Shared {
 
         [DefaultValue("")]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public string ImageUrl { get; set; }
+        public Uri ImageUrl { get; set; }
 
     }
 }

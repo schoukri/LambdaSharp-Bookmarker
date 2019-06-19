@@ -47,7 +47,7 @@ namespace LambdaSharp.Challenge.Bookmarker.DynamoFunction {
                     Url = url,
                     Title = graph.Title,
                     Description = graph.Metadata["og:description"].Value(),
-                    ImageUrl = graph.Image.ToString(),
+                    ImageUrl = graph.Image,
                 };
                 LogInfo($"Updated Bookmark:\n{SerializeJson(bookmark)}");
                 _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark))).Wait();

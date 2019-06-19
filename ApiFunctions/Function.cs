@@ -87,7 +87,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
                 siteName: "Bookmark.er",
                 type: "website",
                 title: bookmark.Title,
-                image: bookmark.ImageUrl,
+                image: bookmark.ImageUrl.ToString(),
                 url: url,
                 description: bookmark.Description
             );
@@ -98,7 +98,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
     {graph.ToString()}
 </head>
 <body style=""font-family: Helvetica, Arial, sans-serif;"">
-    <img style=""float: left; margin: 0px 15px 15px 0px;"" src=""{WebUtility.HtmlEncode(bookmark.ImageUrl)}"" width=150 height=150 />
+    <img style=""float: left; margin: 0px 15px 15px 0px;"" src=""{WebUtility.HtmlEncode(bookmark.ImageUrl.ToString())}"" width=150 height=150 />
     <h1>{WebUtility.HtmlEncode(bookmark.Title)}</h1>
     <p>{WebUtility.HtmlEncode(bookmark.Description)}</p>
     <p><a href=""{WebUtility.HtmlEncode(url)}"">{WebUtility.HtmlEncode(url)}</a></p>
