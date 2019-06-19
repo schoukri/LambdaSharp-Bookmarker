@@ -18,21 +18,13 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         public string ID { get; set; }
     }
 
+    public class GetBookmarkResponse : Bookmark{}
+
     public class GetBookmarksResponse {
 
         //--- Properties ---
         [JsonRequired]
         public List<Bookmark> Bookmarks = new List<Bookmark>();
-    }
-
-    public class GetBookmarkResponse : Bookmark {
-
-        // //--- Properties ---
-        // [JsonRequired]
-        // public string ID { get; set; }
-
-        // [JsonRequired]
-        // public string Url { get; set; }
     }
 
     public class DeleteBookmarkResponse {
