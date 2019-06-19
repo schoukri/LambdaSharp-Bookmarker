@@ -74,16 +74,15 @@ Ideally, you would NOT use a simple sequential integer as that would allow our c
 
 When a new bookmark is added to DynamoDB, it will only store the ID and Url. However, we want to record more information about our Bookmark in order to support a preview feature (Level 3). On an insert into our DynamoDB table, the lambda function `DynamoFunction` will be triggered.
 
-Modify that function to retrieve the OpenGraph data from the URL and update the Bookmark in DynamoDB to include the following fields: Title, Description, and ImageUrl.
+Modify that function to retrieve the [OpenGraph](https://github.com/ghorsey/OpenGraph-Net)  data from the URL and update the Bookmark in DynamoDB to include the following fields: Title, Description, and ImageUrl.
 
-### Documentation
-
-[OpenGraph-Net](https://github.com/ghorsey/OpenGraph-Net) -- library used in this challenge
-
+[Retrieving OpenGraph Data from a URL](https://github.com/ghorsey/OpenGraph-Net#parsing-from-a-url)
 
 ## Level 3 -- Generate HTML Preview
 
-Modify the API Gateway lambda function for the endpoint `GET:/preview/{id}` to return an HTML preview of a Bookmark. The HTML should include OpenGraph tags so that the preview renders correctly when shared in apps such as Slack, iMessage, etc.
+Modify the API Gateway lambda function `GetBookmarkPreview` to return an HTML preview of a Bookmark. The HTML should include OpenGraph MetaData tags so that the preview renders correctly when the preview URL is shared in apps such as Slack, iMessage, etc.
+
+[Writing out OpenGraph Example](https://github.com/ghorsey/OpenGraph-Net#writing-out-opengraph-metadata-to-the-head-tag)
 
 ![sharing screenshot](./img/slack_screenshot.png)
 

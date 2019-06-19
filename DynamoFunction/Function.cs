@@ -33,21 +33,16 @@ namespace LambdaSharp.Challenge.Bookmarker.DynamoFunction {
             LogInfo($"# DynamoDB Stream Records Count = {evt.Records.Count}");
             for(var i = 0; i < evt.Records.Count; ++i) {
                 var record = evt.Records[i];
-                LogInfo($"Record #{i}");
-                LogInfo($"DynamoDB.ApproximateCreationDateTime = {record.Dynamodb.ApproximateCreationDateTime}");
                 LogInfo($"EventID = {record.EventID}");
-                LogInfo($"EventName = {record.EventName}");
                 if (record.EventName != "INSERT") continue;
                 var id = record.Dynamodb.NewImage["ID"].S;
                 var url = new Uri(record.Dynamodb.NewImage["Url"].S);
-                var graph = OpenGraph.ParseUrl(url.ToString());
-                // var html = graph.OriginalHtml;
                 var bookmark = new Bookmark {
                     ID = id,
                     Url = url,
-                    Title = graph.Title,
-                    Description = graph.Metadata["og:description"].Value(),
-                    ImageUrl = graph.Image,
+                    Title = "Replace with OpenGraph data",
+                    Description = "Replace with OpenGraph data",
+                    ImageUrl = new Uri("replace_with_open_graph_data.png"),
                 };
                 LogInfo($"Updated Bookmark:\n{SerializeJson(bookmark)}");
                 _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark))).Wait();

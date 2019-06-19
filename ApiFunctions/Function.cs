@@ -82,26 +82,13 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         public APIGatewayProxyResponse GetBookmarkPreview(string id) {
             LogInfo($"Get Bookmark Preview: ID={id}");
             var bookmark = RetrieveBookmark(id) ?? throw AbortNotFound("Bookmark not found");
-            var url = bookmark.Url.ToString();
-            var graph = OpenGraph.MakeGraph(
-                siteName: "Bookmark.er",
-                type: "website",
-                title: bookmark.Title,
-                image: bookmark.ImageUrl.ToString(),
-                url: url,
-                description: bookmark.Description
-            );
 
             var html = $@"<html>
-<head prefix=""{graph.HeadPrefixAttributeValue}"">
+<head>
     <title>{WebUtility.HtmlEncode(bookmark.Title)}</title>
-    {graph.ToString()}
 </head>
 <body style=""font-family: Helvetica, Arial, sans-serif;"">
-    <img style=""float: left; margin: 0px 15px 15px 0px;"" src=""{WebUtility.HtmlEncode(bookmark.ImageUrl.ToString())}"" width=150 height=150 />
     <h1>{WebUtility.HtmlEncode(bookmark.Title)}</h1>
-    <p>{WebUtility.HtmlEncode(bookmark.Description)}</p>
-    <p><a href=""{WebUtility.HtmlEncode(url)}"">{WebUtility.HtmlEncode(url)}</a></p>
 </body>
 </html>
 ";
@@ -110,17 +97,6 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
                 StatusCode = 200,
                 Headers = new Dictionary<string,string>(){
                     {"Content-Type", "text/html"},
-                },
-            };
-        }
-
-        public APIGatewayProxyResponse RedirectToBookmark(string id) {
-            LogInfo($"Redirect To Bookmark: ID={id}");
-            var bookmark = RetrieveBookmark(id) ?? throw AbortNotFound("Bookmark not found");
-            return new APIGatewayProxyResponse{
-                StatusCode = 301,
-                Headers = new Dictionary<string,string>(){
-                    {"Location", bookmark.Url.ToString()},
                 },
             };
         }
