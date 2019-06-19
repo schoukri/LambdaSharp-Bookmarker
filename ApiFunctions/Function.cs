@@ -41,7 +41,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
                 ID = id,
                 Url = url,
             };
-            _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark)));
+            _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark))).Wait();
             return new AddBookmarkResponse{
                 ID = bookmark.ID
             };
