@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using Newtonsoft.Json;
 
@@ -10,7 +11,7 @@ namespace LambdaSharp.Challenge.Bookmarker.Shared {
         public string ID { get; set; }
 
         [JsonRequired]
-        public string Url { get; set; }
+        public Uri Url { get; set; }
 
         [DefaultValue("")]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]

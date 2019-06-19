@@ -1,5 +1,5 @@
+using System;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.DynamoDBEvents;
 using Amazon.DynamoDBv2;
@@ -30,7 +30,7 @@ namespace LambdaSharp.Challenge.Bookmarker.DynamoFunction {
         }
 
         public override async Task<string> ProcessMessageAsync(DynamoDBEvent evt) {
-            LogInfo($"# Kinesis Records = {evt.Records.Count}");
+            LogInfo($"# DynamoDB Stream Records Count = {evt.Records.Count}");
             for(var i = 0; i < evt.Records.Count; ++i) {
                 var record = evt.Records[i];
                 LogInfo($"Record #{i}");
@@ -39,24 +39,18 @@ namespace LambdaSharp.Challenge.Bookmarker.DynamoFunction {
                 LogInfo($"EventName = {record.EventName}");
                 if (record.EventName != "INSERT") continue;
                 var id = record.Dynamodb.NewImage["ID"].S;
-                var url = record.Dynamodb.NewImage["Url"].S;
-                if (!Regex.IsMatch(url, "^https?://", RegexOptions.IgnoreCase)) {
-                    LogWarn($"SKIPPED: url is not valid: {url}");
-                    continue;
-                }
-                var graph = OpenGraph.ParseUrl(url);
-                var html = graph.OriginalHtml;
-                LogInfo($"HTML: html");
+                var url = new Uri(record.Dynamodb.NewImage["Url"].S);
+                var graph = OpenGraph.ParseUrl(url.ToString());
+                // var html = graph.OriginalHtml;
                 var bookmark = new Bookmark {
                     ID = id,
                     Url = url,
                     Title = graph.Title,
                     Description = graph.Metadata["og:description"].Value(),
-                    //Description = graph.Metadata["og:description"][0].Value,
                     ImageUrl = graph.Image.ToString(),
                 };
                 LogInfo($"Updated Bookmark:\n{SerializeJson(bookmark)}");
-                _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark)));
+                _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark))).Wait();
             }
             return "Ok";
         }

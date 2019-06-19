@@ -31,12 +31,16 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         }
 
         public AddBookmarkResponse AddBookmark(AddBookmarkRequest request) {
+            LogInfo($"Add Bookmark:  Url={request.Url}");
+            Uri url;
+            if (!Uri.TryCreate(request.Url, UriKind.Absolute, out url)) AbortBadRequest("Url Not Valid");
+
+            // Level 1: generate a short ID that is still unique
             var id = Guid.NewGuid().ToString("D");
             var bookmark = new Bookmark {
                 ID = id,
-                Url = request.Url,
+                Url = url,
             };
-            LogInfo($"Add Bookmark: ID={bookmark.ID}, Url={bookmark.Url}");
             _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark)));
             return new AddBookmarkResponse{
                 ID = bookmark.ID
@@ -78,12 +82,13 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         public APIGatewayProxyResponse GetBookmarkPreview(string id) {
             LogInfo($"Get Bookmark Preview: ID={id}");
             var bookmark = RetrieveBookmark(id) ?? throw AbortNotFound("Bookmark not found");
+            var url = bookmark.Url.ToString();
             var graph = OpenGraph.MakeGraph(
                 siteName: "Bookmark.er",
                 type: "website",
                 title: bookmark.Title,
                 image: bookmark.ImageUrl,
-                url: bookmark.Url,
+                url: url,
                 description: bookmark.Description
             );
 
@@ -96,7 +101,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
     <img style=""float: left; margin: 0px 15px 15px 0px;"" src=""{WebUtility.HtmlEncode(bookmark.ImageUrl)}"" width=150 height=150 />
     <h1>{WebUtility.HtmlEncode(bookmark.Title)}</h1>
     <p>{WebUtility.HtmlEncode(bookmark.Description)}</p>
-    <p><a href=""{WebUtility.HtmlEncode(bookmark.Url)}"">{WebUtility.HtmlEncode(bookmark.Url)}</a></p>
+    <p><a href=""{WebUtility.HtmlEncode(url)}"">{WebUtility.HtmlEncode(url)}</a></p>
 </body>
 </html>
 ";
@@ -115,7 +120,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
             return new APIGatewayProxyResponse{
                 StatusCode = 301,
                 Headers = new Dictionary<string,string>(){
-                    {"Location", bookmark.Url},
+                    {"Location", bookmark.Url.ToString()},
                 },
             };
         }
