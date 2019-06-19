@@ -9,6 +9,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.DynamoDBEvents;
 using Amazon.DynamoDBv2.DocumentModel;
+using LambdaSharp.Challenge.Bookmarker.Shared;
 
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -25,8 +26,6 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         private List<Bookmark> _bookmarks = new List<Bookmark>();
 
         public override async Task InitializeAsync(LambdaConfig config) {
-
-             LogInfo($"CONFIG KEYS: {string.Join(", ", config.Keys)}");
             // initialize AWS clients
             _dynamoDbClient = new AmazonDynamoDBClient();
 
@@ -37,13 +36,13 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         public AddBookmarkResponse AddBookmark(AddBookmarkRequest request) {
             var bookmark = new Bookmark {
                 ID = Guid.NewGuid().ToString("N"),
-                Url = request.Url
+                Url = request.Url,
+                Title = "",
+                Description = "",
+                ImageUrl = "",
             };
-
             LogInfo($"Bookmark: ID={bookmark.ID}, Url={bookmark.Url}");
-
             _table.PutItemAsync(Document.FromJson(SerializeJson(bookmark)));
-
             return new AddBookmarkResponse{
                 ID = bookmark.ID
             };
@@ -51,16 +50,15 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
 
         public GetBookmarksResponse GetBookmarks(string contains = null, int offset = 0, int limit = 10) {
             var search = _table.Scan(new ScanFilter());
-
             var bookmarks = new List<Bookmark>();
-            do
-            {
+            do {
                 var task = Task.Run<List<Document>>(async () => await search.GetNextSetAsync());
                 var documentList = task.Result;
-                foreach (var document in documentList)
+                foreach (var document in documentList) {
+                    LogInfo($"Document JSON\n{document.ToJson()}");
                     bookmarks.Add(DeserializeJson<Bookmark>(document.ToJson()));
+                }
             } while (!search.IsDone);
-
             return new GetBookmarksResponse{
                 Bookmarks = bookmarks
             };
@@ -78,7 +76,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         public DeleteBookmarkResponse DeleteBookmark(string id) {
             var task = Task.Run<Document>(async () => await _table.DeleteItemAsync(id));
             return new DeleteBookmarkResponse{
-                Deleted = task.IsCompletedSuccessfully,
+                Deleted = task.IsCompleted,
             };
          }
 

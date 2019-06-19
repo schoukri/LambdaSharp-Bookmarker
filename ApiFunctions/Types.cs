@@ -1,18 +1,9 @@
 using System.Collections.Generic;
 using Amazon.Lambda.Core;
 using Newtonsoft.Json;
+using LambdaSharp.Challenge.Bookmarker.Shared;
 
 namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
-
-    public class Bookmark {
-
-        //--- Properties ---
-        [JsonRequired]
-        public string ID { get; set; }
-
-        [JsonRequired]
-        public string Url { get; set; }
-    }
 
     public class AddBookmarkRequest {
 
