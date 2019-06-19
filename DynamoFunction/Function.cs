@@ -1,18 +1,12 @@
-using System;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.DynamoDBEvents;
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2.DocumentModel;
-using Amazon.Lambda.Serialization.Json;
-using LambdaSharp;
-using LambdaSharp.Challenge.Bookmarker.Shared;
 using OpenGraphNet;
 using OpenGraphNet.Metadata;
+using LambdaSharp.Challenge.Bookmarker.Shared;
 
 
 
@@ -40,17 +34,9 @@ namespace LambdaSharp.Challenge.Bookmarker.DynamoFunction {
             for(var i = 0; i < evt.Records.Count; ++i) {
                 var record = evt.Records[i];
                 LogInfo($"Record #{i}");
-                LogInfo($"AwsRegion = {record.AwsRegion}");
                 LogInfo($"DynamoDB.ApproximateCreationDateTime = {record.Dynamodb.ApproximateCreationDateTime}");
-                LogInfo($"DynamoDB.Keys.Count = {record.Dynamodb.Keys.Count}");
-                LogInfo($"DynamoDB.Keys = {string.Join(", ", record.Dynamodb.Keys)}");
-                LogInfo($"DynamoDB.SequenceNumber = {record.Dynamodb.SequenceNumber}");
-                LogInfo($"DynamoDB.UserIdentity.PrincipalId = {record.UserIdentity?.PrincipalId}");
                 LogInfo($"EventID = {record.EventID}");
                 LogInfo($"EventName = {record.EventName}");
-                LogInfo($"EventSource = {record.EventSource}");
-                LogInfo($"EventSourceArn = {record.EventSourceArn}");
-                LogInfo($"EventVersion = {record.EventVersion}");
                 if (record.EventName != "INSERT") continue;
                 var id = record.Dynamodb.NewImage["ID"].S;
                 var url = record.Dynamodb.NewImage["Url"].S;
@@ -60,6 +46,7 @@ namespace LambdaSharp.Challenge.Bookmarker.DynamoFunction {
                 }
                 var graph = OpenGraph.ParseUrl(url);
                 var html = graph.OriginalHtml;
+                LogInfo($"HTML: html");
                 var bookmark = new Bookmark {
                     ID = id,
                     Url = url,

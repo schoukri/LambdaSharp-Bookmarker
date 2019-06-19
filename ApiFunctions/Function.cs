@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
-using LambdaSharp;
-using LambdaSharp.ApiGateway;
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
-using Amazon.Lambda.DynamoDBEvents;
 using Amazon.DynamoDBv2.DocumentModel;
+using LambdaSharp.ApiGateway;
 using LambdaSharp.Challenge.Bookmarker.Shared;
 
 
@@ -70,13 +66,16 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
             return new GetBookmarkResponse{
                 ID = bookmark.ID,
                 Url = bookmark.Url,
+                Title = bookmark.Title,
+                Description = bookmark.Description,
+                ImageUrl = bookmark.ImageUrl,
             };
         }
 
         public DeleteBookmarkResponse DeleteBookmark(string id) {
             var task = Task.Run<Document>(async () => await _table.DeleteItemAsync(id));
             return new DeleteBookmarkResponse{
-                Deleted = task.IsCompleted,
+                Deleted = true,
             };
          }
 

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace LambdaSharp.Challenge.Bookmarker.Shared {
@@ -11,13 +12,16 @@ namespace LambdaSharp.Challenge.Bookmarker.Shared {
         [JsonRequired]
         public string Url { get; set; }
 
-        [JsonIgnore]
+        [DefaultValue("")]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string Title { get; set; }
 
-        [JsonIgnore]
+        [DefaultValue("")]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string Description { get; set; }
 
-        [JsonIgnore]
+        [DefaultValue("")]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string ImageUrl { get; set; }
 
     }

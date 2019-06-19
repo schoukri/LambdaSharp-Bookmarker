@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Amazon.Lambda.Core;
 using Newtonsoft.Json;
 using LambdaSharp.Challenge.Bookmarker.Shared;
 
@@ -26,14 +25,14 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         public List<Bookmark> Bookmarks = new List<Bookmark>();
     }
 
-    public class GetBookmarkResponse {
+    public class GetBookmarkResponse : Bookmark {
 
-        //--- Properties ---
-        [JsonRequired]
-        public string ID { get; set; }
+        // //--- Properties ---
+        // [JsonRequired]
+        // public string ID { get; set; }
 
-        [JsonRequired]
-        public string Url { get; set; }
+        // [JsonRequired]
+        // public string Url { get; set; }
     }
 
     public class DeleteBookmarkResponse {
