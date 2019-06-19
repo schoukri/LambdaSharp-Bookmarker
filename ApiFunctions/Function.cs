@@ -1,9 +1,12 @@
 using System;
+using System.Net;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.Lambda.APIGatewayEvents;
+using OpenGraphNet;
 using LambdaSharp.ApiGateway;
 using LambdaSharp.Challenge.Bookmarker.Shared;
 
@@ -39,6 +42,17 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
                 ID = bookmark.ID
             };
          }
+        public GetBookmarkResponse GetBookmark(string id) {
+            LogInfo($"Get Bookmark: ID={id}");
+            var bookmark = RetrieveBookmark(id) ?? throw AbortNotFound("Bookmark not found");
+            return new GetBookmarkResponse{
+                ID = bookmark.ID,
+                Url = bookmark.Url,
+                Title = bookmark.Title,
+                Description = bookmark.Description,
+                ImageUrl = bookmark.ImageUrl,
+            };
+        }
 
         public GetBookmarksResponse GetBookmarks(string contains = null, int offset = 0, int limit = 10) {
             var search = _table.Scan(new ScanFilter());
@@ -53,34 +67,65 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
             };
         }
 
-        public GetBookmarkResponse GetBookmark(string id) {
-            LogInfo($"Get Bookmark: ID={id}");
-            var task = Task.Run<Document>(async () => await _table.DeleteItemAsync(id));
-            var document = task.Result;
-            if (document == null) throw AbortNotFound("Bookmark not found");
-            var bookmark = DeserializeJson<Bookmark>(document.ToJson());
-            return new GetBookmarkResponse{
-                ID = bookmark.ID,
-                Url = bookmark.Url,
-                Title = bookmark.Title,
-                Description = bookmark.Description,
-                ImageUrl = bookmark.ImageUrl,
-            };
-        }
-
         public DeleteBookmarkResponse DeleteBookmark(string id) {
             LogInfo($"Delete Bookmark: ID={id}");
             var task = Task.Run<Document>(async () => await _table.DeleteItemAsync(id));
             return new DeleteBookmarkResponse{
                 Deleted = true,
             };
-         }
+        }
 
-        private async Task<T> GetRecord<T>(string id) {
-            var record = await _table.GetItemAsync(id);
-            return (record == null)
-                ? default(T)
-                : DeserializeJson<T>(record.ToJson());
+        public APIGatewayProxyResponse GetBookmarkPreview(string id) {
+            LogInfo($"Get Bookmark Preview: ID={id}");
+            var bookmark = RetrieveBookmark(id) ?? throw AbortNotFound("Bookmark not found");
+            var graph = OpenGraph.MakeGraph(
+                siteName: "Bookmark.er",
+                type: "website",
+                title: bookmark.Title,
+                image: bookmark.ImageUrl,
+                url: bookmark.Url,
+                description: bookmark.Description
+            );
+
+            var html = $@"<html>
+<head prefix=""{graph.HeadPrefixAttributeValue}"">
+    <title>{WebUtility.HtmlEncode(bookmark.Title)}</title>
+    {graph.ToString()}
+</head>
+<body style=""font-family: Helvetica, Arial, sans-serif;"">
+    <img style=""float: left; margin: 0px 15px 15px 0px;"" src=""{WebUtility.HtmlEncode(bookmark.ImageUrl)}"" width=150 height=150 />
+    <h1>{WebUtility.HtmlEncode(bookmark.Title)}</h1>
+    <p>{WebUtility.HtmlEncode(bookmark.Description)}</p>
+    <p><a href=""{WebUtility.HtmlEncode(bookmark.Url)}"">{WebUtility.HtmlEncode(bookmark.Url)}</a></p>
+</body>
+</html>
+";
+            return new APIGatewayProxyResponse{
+                Body = html,
+                StatusCode = 200,
+                Headers = new Dictionary<string,string>(){
+                    {"Content-Type", "text/html"},
+                },
+            };
+        }
+
+        public APIGatewayProxyResponse RedirectToBookmark(string id) {
+            LogInfo($"Redirect To Bookmark: ID={id}");
+            var bookmark = RetrieveBookmark(id) ?? throw AbortNotFound("Bookmark not found");
+            return new APIGatewayProxyResponse{
+                StatusCode = 301,
+                Headers = new Dictionary<string,string>(){
+                    {"Location", bookmark.Url},
+                },
+            };
+        }
+
+        private Bookmark RetrieveBookmark(string id) {
+            var task = Task.Run<Document>(async () => await _table.GetItemAsync(id));
+            var document = task.Result;
+            return (document == null)
+                ? null
+                : DeserializeJson<Bookmark>(document.ToJson());
         }
     }
 }
