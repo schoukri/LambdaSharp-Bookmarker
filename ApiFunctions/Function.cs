@@ -62,8 +62,8 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
             var search = _table.Scan(new ScanFilter());
             var bookmarks = new List<Bookmark>();
             do {
-                var task = Task.Run<List<Document>>(async () => await search.GetNextSetAsync());
-                foreach (var document in task.Result)
+                var documentList = search.GetNextSetAsync().Result;
+                foreach (var document in documentList)
                     bookmarks.Add(DeserializeJson<Bookmark>(document.ToJson()));
             } while (!search.IsDone);
             return new GetBookmarksResponse{
@@ -73,7 +73,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
 
         public DeleteBookmarkResponse DeleteBookmark(string id) {
             LogInfo($"Delete Bookmark: ID={id}");
-            var task = Task.Run<Document>(async () => await _table.DeleteItemAsync(id));
+            _table.DeleteItemAsync(id).Wait();
             return new DeleteBookmarkResponse{
                 Deleted = true,
             };
@@ -126,8 +126,7 @@ namespace LambdaSharp.Challenge.Bookmarker.ApiFunctions {
         }
 
         private Bookmark RetrieveBookmark(string id) {
-            var task = Task.Run<Document>(async () => await _table.GetItemAsync(id));
-            var document = task.Result;
+            var document = _table.GetItemAsync(id).Result;
             return (document == null)
                 ? null
                 : DeserializeJson<Bookmark>(document.ToJson());
